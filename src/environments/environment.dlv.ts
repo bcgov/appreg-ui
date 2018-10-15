@@ -3,5 +3,6 @@ export const environment = {
   bcdc_base_url: "/registryapi",
   bcdc_api_path: "/action",
   argg_api_base_url: "/api",
-  license_list_url: "https://licenses-bcdc.data.gov.bc.ca/bcdc_licenses.json"
+  developer_key_url: "https://github.com/bcgov/gwa/wiki/Developer-Guide#developer-api-key-application",
+  group_blacklist: ["bc-government-api-registry"]
 };

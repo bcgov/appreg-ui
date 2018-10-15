@@ -7,6 +7,14 @@ Divider
 }
 
 /*
+Stretch to pul the footer to the bottom
+*/
+.stretch {
+  /*height: 300px;*/
+  border: 0px
+}
+
+/*
 Required field indicator
 */
 label.required:after {

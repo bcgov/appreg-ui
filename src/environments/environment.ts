@@ -7,7 +7,8 @@ export const environment = {
   bcdc_base_url: "https://cad.data.gov.bc.ca",
   bcdc_api_path: "/api/3/action",
   argg_api_base_url: "http://localhost:5000",
-  license_list_url: "https://licenses-bcdc.data.gov.bc.ca/bcdc_licenses.json"
+  developer_key_url: "https://github.com/bcgov/gwa/wiki/Developer-Guide#developer-api-key-application",
+  group_blacklist: ["bc-government-api-registry"]
 };
 
 

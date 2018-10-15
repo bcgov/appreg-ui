@@ -3,24 +3,42 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { from } from 'rxjs';
-import { debounceTime, mergeMap, tap, catchError, filter, reduce } from 'rxjs/operators';
+import { debounceTime, mergeMap, tap, catchError, filter, map, reduce } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BcdcService {
 
+  loadingApis: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
   loadingOrganizations: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
   loadingContactRoles: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
+  loadingGroups: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
 
+  loadingApisError: String = null;
+
+  allApis: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   allOrganizations: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+  allGroups: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   topLevelOrganizations: BehaviorSubject<any> = new BehaviorSubject<any>(null);
-  licenses: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   securityClassifications: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   viewAudiences: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   contactRoles: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
   constructor(private http: HttpClient) { 
+
+    this.fetchApis().subscribe(
+      (resp) => {
+        var apis = resp.result.results;
+        this.allApis.next(apis)
+        //this.loadingApisError = null;
+      },
+      (err) => {
+        this.loadingApisError = "Unable to fetch a list of 'APIs'"
+        this.loadingApis.next(false);
+      },
+      () => {this.loadingApis.next(false);}
+      )
 
     this.fetchOrganizations().subscribe(
       (resp) => this.allOrganizations.next(resp.result),
@@ -34,11 +52,6 @@ export class BcdcService {
       ).subscribe(
         this.buildTopLevelOrgs
       )    
-
-    this.fetchLicenses().subscribe(
-      (licenses) => this.licenses.next(licenses),
-      (err) => console.error("Unable to fetch a list of 'licenses'")
-      )
 
     this.fetchSecurityClassifications().subscribe(
       (resp) => this.securityClassifications.next(resp.result.tags),
@@ -56,6 +69,19 @@ export class BcdcService {
       () => {this.loadingContactRoles.next(false);}
       )  
 
+    this.fetchGroups().subscribe(
+      (resp) => {
+        var groups = resp.result;
+        var filteredGroups = groups.filter(group => environment.group_blacklist.indexOf(group) == -1);
+        this.allGroups.next(filteredGroups);
+      },
+      (err) => {
+        console.error("Unable to fetch a list of 'groups'")
+        this.loadingGroups.next(false);
+      },
+      () => {this.loadingGroups.next(false);}
+      )      
+
   }
 
   private buildTopLevelOrgs = (allOrgs) => {
@@ -69,7 +95,6 @@ export class BcdcService {
       ).subscribe(
         topLevelOrgs => {
           this.topLevelOrganizations.next(topLevelOrgs);
-          console.log("set top level orgs: "+topLevelOrgs.length);
         })    
   }
 
@@ -93,6 +118,19 @@ export class BcdcService {
     return stream;
   }
 
+  public fetchApis(): Observable<any> {
+    this.loadingApis.next(true);
+   
+    //var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/package_search?fq=tags:API`;
+    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/package_search?fq=type:WebService`;
+
+    var options = {
+      "headers": new HttpHeaders().set('accept', "application/json")
+    }
+    
+    return this.http.get(url, options);    
+  }
+
   public fetchOrganizations(): Observable<any> { 
     
     this.loadingOrganizations.next(true);
@@ -105,9 +143,14 @@ export class BcdcService {
     return this.http.get(url, options);
   }
 
-  public fetchLicenses(): Observable<any> {
-    var url = environment.license_list_url;    
-    return this.http.get(url, {});
+  public getOrganizationById(orgId): Observable<any> { 
+    var observable = this.allOrganizations
+      .pipe(
+        map(orgs => orgs ? orgs.filter(org => org.id == orgId) : []), //convert to list of items with matching id
+        map(orgs => orgs.length ? orgs[0] : null) //pick first item of those that remain
+      )
+
+    return observable;
   }
 
   public fetchSecurityClassifications(): Observable<any> {
@@ -144,4 +187,43 @@ export class BcdcService {
     return this.http.get(url, options);
   }  
 
+  public fetchGroups(): Observable<any> {
+    
+    this.loadingGroups.next(true);
+    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/group_list`;
+
+    var options = {
+      "headers": new HttpHeaders().set('accept', "application/json")
+    }
+    
+    return this.http.get(url, options);
+  }
+
+  public packageSearch():  Observable<any> {
+    
+    this.loadingGroups.next(true);
+    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/group_list`;
+
+    var options = {
+      "headers": new HttpHeaders().set('accept', "application/json")
+    }
+    
+    return this.http.get(url, options);
+  }
+
+  /**
+   * param params: an object with keys specifying the fields to search and values specifying the
+   * values to restrict to.  e.g.
+   * params = { "name": "physical-address-geocoding-web-service"}
+   * or 
+   * params = { "type": "WebService"}
+   */
+  public getPackageSearchUrl(params){ 
+    var queryString = "q=";
+    for (var key in params) {
+      queryString += `${key}:${params[key]}&`;
+    }
+    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/package_search?${queryString}`;
+    return url;
+  }
 }
