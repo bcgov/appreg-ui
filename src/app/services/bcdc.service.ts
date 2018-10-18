@@ -20,6 +20,7 @@ export class BcdcService {
   allApis: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   allOrganizations: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   allGroups: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+  licenses: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   topLevelOrganizations: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   securityClassifications: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   viewAudiences: BehaviorSubject<any> = new BehaviorSubject<any>(null);
@@ -38,6 +39,11 @@ export class BcdcService {
         this.loadingApis.next(false);
       },
       () => {this.loadingApis.next(false);}
+      )
+
+    this.fetchLicenses().subscribe(
+      (licenses) => this.licenses.next(licenses),
+      (err) => {console.error("Unable to fetch a list of 'licenses'"); console.log(err);}
       )
 
     this.fetchOrganizations().subscribe(
@@ -118,6 +124,11 @@ export class BcdcService {
     return stream;
   }
 
+  public fetchLicenses(): Observable<any> {
+    var url = environment.license_list_url;    
+    return this.http.get(url, {});
+  }
+
   public fetchApis(): Observable<any> {
     this.loadingApis.next(true);
    
@@ -148,6 +159,16 @@ export class BcdcService {
       .pipe(
         map(orgs => orgs ? orgs.filter(org => org.id == orgId) : []), //convert to list of items with matching id
         map(orgs => orgs.length ? orgs[0] : null) //pick first item of those that remain
+      )
+
+    return observable;
+  }
+
+  public getLicenseByUrl(licenseUrl): Observable<any> { 
+    var observable = this.licenses
+      .pipe(
+        map(licenses => licenses ? licenses.filter(license => license.url == licenseUrl) : []), //convert to list of items with matching url
+        map(licenses => licenses.length ? licenses[0] : null) //pick first item of those that remain
       )
 
     return observable;

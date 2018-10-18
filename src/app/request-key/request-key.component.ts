@@ -32,6 +32,7 @@ export class RequestKeyomponent implements OnInit {
   contactRoles: any[];
   securityClassifications: any[];
   viewAudiences: any[];
+  licenses: any[];
   env = environment;
 
 
@@ -47,12 +48,16 @@ export class RequestKeyomponent implements OnInit {
       api: [null, Validators.required],
       //metadata
       hasMetadataRecord: [null, Validators.required],
-      metadataRecordUrl: [null],
+      metadataRecordUrl: [null], //validators added dynamically when needed
       //Application
       appTitle: [null, Validators.required],
       appDescription: [null, Validators.required],
       appType: [null, Validators.required],
       appUrl: [null, Validators.compose([Validators.required, Validators.pattern(urlService.validUrlPattern)])],
+      //Access
+      viewAudience: [null, Validators.required],
+      securityClass: [null, Validators.required],
+      license: [null, Validators.required],
       //owner
       ownerOrg: [null, Validators.required],
       ownerSubOrg: [null, Validators.required],
@@ -74,6 +79,10 @@ export class RequestKeyomponent implements OnInit {
       apis => {
         this.allApis = apis;
       })
+
+    bcdcService.licenses.subscribe(
+      (licenses) => this.licenses = licenses
+      )
 
     bcdcService.topLevelOrganizations
     .subscribe(
@@ -103,10 +112,11 @@ export class RequestKeyomponent implements OnInit {
     //conditions for autopopulating form data from OpenAPI spec
     this.form1.get("metadataRecordUrl").valueChanges
       .pipe(
-        filter(val => val),     
-        map(val => this.getMetadataRecordJsonUrl(val)),
-        debounceTime(300),        
+        filter(val => val),
+        tap(val => this.autocompleteFromMetadataRecord = false),
         tap(val => this.metadataRecordErr = null),
+        map(val => this.getMetadataRecordJsonUrl(val)),
+        debounceTime(300),                
         tap(val => this.setMetadataSearchResponse(null)), 
         filter(val => val),
         tap(val => this.loadingMetadataRecord = true),       
@@ -165,6 +175,10 @@ export class RequestKeyomponent implements OnInit {
   JSON version.
   */
   getMetadataRecordJsonUrl = (url) => {
+    var isValid = this.urlService.isValidUrl(url);
+    if (!isValid) {
+      return url;
+    }
     const datasetStr = "/dataset/";
     var datasetIndex = url.indexOf(datasetStr);
     if (datasetIndex > -1) {
@@ -215,7 +229,8 @@ export class RequestKeyomponent implements OnInit {
           }
         }
         else {
-          console.warn("Unable to lookup metadata record.  Form fields will not be auto-populated.");
+          //console.warn("Unable to lookup metadata record.  Form fields will not be auto-populated.");
+          this.metadataRecordErr = "No metadata record was found at the above URL.";
         }
       }
     }
@@ -289,7 +304,9 @@ export class RequestKeyomponent implements OnInit {
   }
 
   toggleMetadataUrl = (hasMetadataRecord) => {
-    const v = hasMetadataRecord ? [Validators.required] : null;
+    const v = hasMetadataRecord ? 
+      [Validators.compose([Validators.required, Validators.pattern(this.urlService.validUrlPattern)])] : 
+      null;
 
     this.form1.get("metadataRecordUrl").setValidators(v);
     this.form1.get("metadataRecordUrl").updateValueAndValidity();
@@ -305,7 +322,12 @@ export class RequestKeyomponent implements OnInit {
       //about this application
       this.form1.get("appTitle"), 
       this.form1.get("appDescription"), 
+      this.form1.get("appType"),
       this.form1.get("appUrl"),
+      //access
+      this.form1.get("viewAudience"),
+      this.form1.get("securityClass"),
+      this.form1.get("license"),
       //owner
       this.form1.get("ownerOrg"),
       this.form1.get("ownerSubOrg"),
@@ -364,6 +386,37 @@ export class RequestKeyomponent implements OnInit {
         autocompletedAtLeastOneField = true;  
       }
     }
+
+    //view audience
+    if (metadataRecord.hasOwnProperty("view_audience")) {
+      if (!this.form1.get("viewAudience").touched) {
+        this.form1.get("viewAudience").setValue(metadataRecord.view_audience)
+        autocompletedAtLeastOneField = true;  
+      }
+    }
+
+    //security classification
+    if (metadataRecord.hasOwnProperty("security_class")) {
+      if (!this.form1.get("securityClass").touched) {
+        this.form1.get("securityClass").setValue(metadataRecord.security_class)
+        autocompletedAtLeastOneField = true;  
+      }
+    }   
+
+    //license
+    if (metadataRecord.hasOwnProperty("license_url")) {
+      var licenseUrl = metadataRecord.license_url;
+      if (!this.form1.get("license").touched) {
+        //async request.  set org when response comes in.
+        this.bcdcService.getLicenseByUrl(licenseUrl).subscribe(
+          license => {
+            if (license) {
+              this.form1.get("license").setValue(license);
+              autocompletedAtLeastOneField = true;  
+            }
+        })   
+      }
+    }  
 
     //owner
     //------------
@@ -429,7 +482,6 @@ export class RequestKeyomponent implements OnInit {
   choosePrimaryContact(metadataRecord: any) {
     //contacts with role:custodian are considered first as the primary contact.
     //contacts with role:pointOfContact are considered second
-    //
     var rolePriorities = ["custodian", "pointOfContact"]; 
     var primaryContact = null;
     if (metadataRecord.hasOwnProperty("contacts")) {
@@ -456,13 +508,7 @@ export class RequestKeyomponent implements OnInit {
     
     //prepare values that will be injected into the data object but 
     //which need non-trivial computation
-    var openApiSpecUrl = this.form1.get("openApiSpecUrl").value;
-    var existingMetadataUrl = this.form1.get('metadataRecordUrl').value;
-    var supportsHttps = this.yesNoToBool(this.form1.get("supportsHttps").value);
-    var supportsCors = this.yesNoToBool(this.form1.get("supportsCors").value);
-    var useGateway = this.yesNoToBool(this.form1.get("useGateway").value);
-    var useThrottling = this.yesNoToBool(this.form1.get("useGatewayThrottling").value);
-    var useApiKeys = this.yesNoToBool(this.form1.get("useGatewayApiKeys").value);
+    var metadataUrl = this.form1.get('metadataRecordUrl').value;
     var principalContact = {
       "name": this.form1.get("principalContactName").value,
       "org_id": this.form1.get("ownerOrg").value.id,
@@ -484,51 +530,46 @@ export class RequestKeyomponent implements OnInit {
       }
     var downloadAudience = this.form1.get("viewAudience").value;
 
-    var data = {
-      "submitted_by_person": submitterContact,
-      "existing_metadata_url": existingMetadataUrl,
-      "metadata_details": {
-        "title": this.form1.get('title').value,
-        "owner": {
-          "org_id": this.form1.get("ownerOrg").value.id,
-          "sub_org_id": this.form1.get("ownerSubOrg").value.id,
-          "contact_person": principalContact
-        },    
-        "description": this.form1.get('description').value,
-        "status": "completed", //default value
-        "security": {
-          "view_audience": this.form1.get("viewAudience").value, 
-          "download_audience": downloadAudience, 
-          "metadata_visibility": "Public", //default value
-          "security_class": this.form1.get("securityClass").value 
-        },
-        "license": {
-          "license_title": this.form1.get("license").value.title,
-          "license_url": this.form1.get("license").value.url,
-          "license_id": this.form1.get("license").value.id
-        }
+    var api = {
+      "title": this.form1.get("api").value.title
+    }
+
+    var app = {
+      "title": this.form1.get('appTitle').value,
+      "url": this.form1.get("appUrl").value,
+      "metadata_url": this.form1.get("metadataRecordUrl").value,
+      "description": this.form1.get('appDescription').value,
+      "type": this.form1.get('appType').value,
+      "status": "completed", //default value
+      "owner": {
+        "org_id": this.form1.get("ownerOrg").value.id,
+        "sub_org_id": this.form1.get("ownerSubOrg").value.id,
+        "contact_person": principalContact
       },
-      "existing_api": {
-        "supports": {
-          "https": supportsHttps,
-          "cors": supportsCors
-        },
-        "base_url": this.form1.get("baseUrl").value,
-        "openapi_spec_url": openApiSpecUrl
+      "security": {
+        "view_audience": this.form1.get("viewAudience").value, 
+        "download_audience": downloadAudience, 
+        "metadata_visibility": "Public", //default value
+        "security_class": this.form1.get("securityClass").value 
       },
-      "gateway": {
-        "use_gateway": useGateway,
-        "use_throttling": useThrottling,
-        "restrict_access": useApiKeys,
-        "api_shortname": this.form1.get("applicationShortName").value    
+      "license": {
+        "license_title": this.form1.get("license").value.title,
+        "license_url": this.form1.get("license").value.url,
+        "license_id": this.form1.get("license").value.id
       }
+    };
+
+    var data = {  
+      "api": api,
+      "app": app,
+      "submitted_by_person": submitterContact      
     }
 
     this.submitLoading = true;
     this.arggService.registerApi(data).subscribe(
       this.onSubmitSuccess,
       this.onSubmitError,
-      this.onSubmitComplete,
+      this.onSubmitComplete
       )
   }
 

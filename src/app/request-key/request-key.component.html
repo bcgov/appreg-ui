@@ -88,31 +88,41 @@
               </div>
             </div>
 
-            <div class="form-group" *ngIf="form1.get('hasMetadataRecord').value == 'yes'">
-              <label class="required" for="inputTitle">Metadata Record URL</label>
-              <div class="input-group" >
-                <input type="text" class="form-control" id="metadata-record-url" placeholder="URL" formControlName="metadataRecordUrl">
-                <div class="input-group-addon simple-addon">
-                  <div class="loader" *ngIf="loadingMetadataRecord"></div>
-                </div>
-              </div>
-            </div>
-
+            <!-- hasMetadataRecord == 'no' -->
             <div *ngIf="form1.get('hasMetadataRecord').value == 'no'">
               <div class="alert alert-info" role="alert">
                 <span class="glyphicon glyphicon-search" aria-hidden="true"></span> A new metadata record will be created for you based on the information you provide in this form.
               </div>
             </div>
 
-            <div *ngIf="form1.get('hasMetadataRecord').value == 'yes' && autocompleteFromMetadataRecord && !metadataRecordErr">
-              <div class="alert alert-info" role="alert">
-                <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Some of the form fields below have been populated based on information in the metadata record.
+            <!-- hasMetadataRecord == 'yes' -->
+            <div *ngIf="form1.get('hasMetadataRecord').value == 'yes'">
+              <div class="form-group">
+                <label class="required" for="inputTitle">Metadata Record URL</label>
+                <div class="input-group" >
+                  <input type="text" class="form-control" id="metadata-record-url" placeholder="URL" formControlName="metadataRecordUrl">
+                  <div class="input-group-addon simple-addon">
+                    <div class="loader" *ngIf="loadingMetadataRecord"></div>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div *ngIf="form1.get('hasMetadataRecord').value == 'yes' && metadataRecordErr">
-              <div class="alert alert-info" role="alert">
-                <span class="glyphicon glyphicon-search" aria-hidden="true"></span>{{metadataRecordErr}}
+              <div *ngIf="form1.get('metadataRecordUrl').valid && autocompleteFromMetadataRecord && !metadataRecordErr && !loadingMetadataRecord">
+                <div class="alert alert-info" role="alert">
+                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Some of the form fields below have been populated based on information in the metadata record.
+                </div>
+              </div>
+
+              <div *ngIf="form1.get('metadataRecordUrl').value && !form1.get('metadataRecordUrl').valid && metadataRecordErr && !loadingMetadataRecord">
+                <div class="alert alert-danger" role="alert">
+                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Invalid URL
+                </div>
+              </div>
+
+              <div *ngIf="form1.get('metadataRecordUrl').value && form1.get('metadataRecordUrl').valid && metadataRecordErr && !loadingMetadataRecord">
+                <div class="alert alert-info" role="alert">
+                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span>{{metadataRecordErr}}
+                </div>
               </div>
             </div>
 
@@ -151,6 +161,30 @@
 
             </div>
 
+            <!-- Access -->
+            <div>
+              <div class="form-group">
+                <label class="required" for="inputTitle">Who can access this application?</label>
+                <select class="form-control" formControlName="viewAudience">
+                  <option *ngFor="let viewAudience of viewAudiences" value="{{viewAudience.display_name}}">{{viewAudience.display_name}}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="required" for="inputTitle">What is the application's security classification</label>
+                <select class="form-control" formControlName="securityClass">
+                  <option *ngFor="let securityClassification of securityClassifications" value="{{securityClassification.display_name}}">{{securityClassification.display_name}}</option>
+                </select>
+              </div>            
+
+              <div class="form-group">
+                <label class="required" for="inputTitle">What is the application's license</label>
+                <select class="form-control" formControlName="license">
+                  <option *ngFor="let license of licenses" [ngValue]="license">{{license.title}}</option>
+                </select>
+              </div>              
+
+            </div>
           </div>
         </div>
 
@@ -270,6 +304,8 @@
       <div *ngIf="form1.get('api').value">
 
         <div class="alert alert-info" *ngIf="form1.valid && form1.valid && !submitSuccess">By clicking "submit" below, the information you provided here will be forwarded to DataBC.  DataBC will review the information, and may contact you <span *ngIf="form1.get('isPrincipalContact').value == 'no'">(or the API owner)</span> to confirm details of the request.</div>
+
+        <div>TODO: Captcha here</div>
 
         <div class="alert alert-success" *ngIf="form1.valid && form1.valid && submitSuccess">The API information has been submitted.  DataBC may contact you <span *ngIf="form1.get('isPrincipalContact').value == 'no'">(or the API owner)</span> to discuss the API registration.</div>
 
