@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
-export class ArggService {
+export class KqService {
 
   constructor(private http: HttpClient) { 
 
@@ -15,8 +15,8 @@ export class ArggService {
   /*
   data: a json object as specified in the OpenAPI spec for ARGG
   */
-  registerApi(data: any): Observable<any> {
-    var url = `${environment.argg_api_base_url}/register`;
+  requestKey(data: any): Observable<any> {
+    var url = `${environment.kq_api_base_url}/request_key`;
 
     var options = {
       "headers": new HttpHeaders().set('accept', "application/json")

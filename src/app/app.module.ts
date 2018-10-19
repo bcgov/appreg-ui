@@ -6,7 +6,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { RequestKeyomponent } from './request-key/request-key.component';
 
-import { ArggService } from './services/argg.service';
+import { KqService } from './services/kq.service';
 import { BcdcService } from './services/bcdc.service';
 import { UrlService } from './services/url.service';
 

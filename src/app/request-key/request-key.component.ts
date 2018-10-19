@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
 import { Component, OnInit } from '@angular/core';
-import { ArggService } from '../services/argg.service';
+import { KqService } from '../services/kq.service';
 import { BcdcService } from '../services/bcdc.service';
 import { UrlService } from '../services/url.service';
 import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -37,7 +37,7 @@ export class RequestKeyomponent implements OnInit {
 
 
   constructor(private fb: FormBuilder,
-    private arggService: ArggService,
+    private kqService: KqService,
     public bcdcService: BcdcService,
     private urlService: UrlService) { 
 
@@ -566,7 +566,7 @@ export class RequestKeyomponent implements OnInit {
     }
 
     this.submitLoading = true;
-    this.arggService.registerApi(data).subscribe(
+    this.kqService.requestKey(data).subscribe(
       this.onSubmitSuccess,
       this.onSubmitError,
       this.onSubmitComplete
