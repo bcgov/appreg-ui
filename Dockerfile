@@ -1,5 +1,4 @@
 FROM alpine:3.7
-MAINTAINER leo.lou@gov.bc.ca
 
 # prepare NodeJS build env
 ENV CADDY_VER=0.11.0 \
