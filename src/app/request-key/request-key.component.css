@@ -43,3 +43,9 @@ Loading spinner
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.captcha {
+  width: 160px;
+  height: 60px;
+  border: 1px solid #eeeeee;
+}

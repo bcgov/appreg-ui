@@ -33,6 +33,9 @@ export class RequestKeyomponent implements OnInit {
   securityClassifications: any[];
   viewAudiences: any[];
   licenses: any[];
+  challenge: any;
+  captchaUrl: string = null;
+  captchaImageLoading: boolean;
   env = environment;
 
 
@@ -71,8 +74,12 @@ export class RequestKeyomponent implements OnInit {
       submitterContactPhone: [null],
       submitterRole: [null],
       submitterOrg: [null],
-      submitterSubOrg: [null]
+      submitterSubOrg: [null],
+      //challenge
+      challengeSecret: [null, Validators.required]
     });
+
+  this.newCaptcha();
 
   bcdcService.allApis
     .subscribe(
@@ -107,7 +114,6 @@ export class RequestKeyomponent implements OnInit {
         allGroups => {
           this.groups = allGroups;
         })
-
 
     //conditions for autopopulating form data from OpenAPI spec
     this.form1.get("metadataRecordUrl").valueChanges
@@ -335,6 +341,8 @@ export class RequestKeyomponent implements OnInit {
       this.form1.get("principalContactName"),
       this.form1.get("principalContactEmail"),
       this.form1.get("principalContactPhone"),
+      //challenge
+      this.form1.get("challengeSecret")
       ];
     this._toggleEnabled(fields, isEnabled);
   }
@@ -346,6 +354,26 @@ export class RequestKeyomponent implements OnInit {
     else {
       fields.forEach(field => {field.disable()});
     }    
+  }
+
+  newCaptcha() {
+    
+    this.captchaImageLoading = true;
+    this.captchaUrl = null;
+    this.challenge = null;
+    this.form1.get("challengeSecret").setValue(null); 
+
+    //generate a new challenge, the convert the challenge into a captcha url
+    this.kqService.fetchChallenge()
+      .subscribe(
+        challenge => {
+          this.challenge = challenge;
+          this.captchaUrl = this.kqService.challengeToCaptchaUrl(challenge);
+        },
+        err => {
+          this.captchaUrl = null;
+          this.captchaImageLoading = false;
+        })   
   }
 
   /*
@@ -559,10 +587,16 @@ export class RequestKeyomponent implements OnInit {
       }
     };
 
+    var challengeResponse = {
+      "id": this.challenge ? this.challenge.challenge_id : null,
+      "secret": this.form1.get("challengeSecret").value,
+    }
+
     var data = {  
       "api": api,
       "app": app,
-      "submitted_by_person": submitterContact      
+      "submitted_by_person": submitterContact,
+      "challenge": challengeResponse
     }
 
     this.submitLoading = true;

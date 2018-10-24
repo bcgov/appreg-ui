@@ -299,15 +299,31 @@
 
         </div>
 
+        <!-- challenge -->
+
+        <div *ngIf="!form1.get('challengeSecret').disabled">
+          Demonstrate that you are a human by typing out the text shown in this image.
+          <span *ngIf="captchaImageLoading" style="max-width:50px">
+            <div class="loader pull-right"></div>
+          </span>
+          <div class="form-inline">
+            <img *ngIf="captchaUrl" [src]="captchaUrl" (load)="captchaImageLoading = false;" class="captcha"/>            
+            <button class="btn" style="margin-left:20px" (click)="newCaptcha()" *ngIf="!captchaImageLoading">Get a new image</button>            
+          </div>
+          <div class="form-inline" *ngIf="captchaUrl && !captchaImageLoading">
+            <input type="text" class="form-control" id="challenge-secret" placeholder="" formControlName="challengeSecret"style="max-width:160px"/>                     
+          </div>
+        </div>
+
+        <br/>
+
       </form>
 
       <div *ngIf="form1.get('api').value">
 
-        <div class="alert alert-info" *ngIf="form1.valid && form1.valid && !submitSuccess">By clicking "submit" below, the information you provided here will be forwarded to DataBC.  DataBC will review the information, and may contact you <span *ngIf="form1.get('isPrincipalContact').value == 'no'">(or the API owner)</span> to confirm details of the request.</div>
+        <div class="alert alert-info" *ngIf="form1.valid && form1.valid && !submitSuccess">Clicking "submit" below will record the API key request and will trigger an email to be sent to your email address.  The email will summarize details of the request and will provide a link to signal that you have verified those details.  Only after the verification link in the email is clicked will the API key request be sent to the API owner for review and approval.</div>
 
-        <div>TODO: Captcha here</div>
-
-        <div class="alert alert-success" *ngIf="form1.valid && form1.valid && submitSuccess">The API information has been submitted.  DataBC may contact you <span *ngIf="form1.get('isPrincipalContact').value == 'no'">(or the API owner)</span> to discuss the API registration.</div>
+        <div class="alert alert-success" *ngIf="form1.valid && form1.valid && submitSuccess">The API key request has been recorded.  An email will be sent to you to verify the details of the request.  (The email will contain a link to indicate that you have verified the request.)  Once you have verified the request, it will be sent to the API owner for review and approval.</div>
 
         <div class="alert alert-danger" *ngIf="submitError && !submitLoading">
           <strong>An error occurred.</strong> {{submitError}}

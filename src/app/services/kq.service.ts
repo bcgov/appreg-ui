@@ -25,4 +25,19 @@ export class KqService {
     return this.http.post(url, data, options);
   }
 
+  fetchChallenge(): Observable<any> {
+    const url = `${environment.kq_api_base_url}/challenge`;
+    const data = null;
+    var options = {
+      "headers": new HttpHeaders().set('accept', "application/json")
+    }
+    
+    return this.http.post(url, data, options);
+  }
+
+  challengeToCaptchaUrl(challenge): string {
+    const url = `${environment.kq_api_base_url}/challenge/${challenge.challenge_id}.png`;
+    return url;
+  }
+
 }
