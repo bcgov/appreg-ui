@@ -1,8 +1,18 @@
-FROM node:8
+FROM node:8-alpine
+MAINTAINER leo.lou@gov.bc.ca
 
-USER app    
-WORKDIR /opt
-COPY . /opt
+USER root
+ENV CONTAINER_USER_ID="1001" \
+    CONTAINER_GROUP_ID="1001"
+
+RUN apk update \
+  && adduser -D -u ${CONTAINER_USER_ID} -g ${CONTAINER_GROUP_ID} -h /app -s /bin/sh app \
+  && mkdir /npm-global && chown -R ${CONTAINER_USER_ID}:${CONTAINER_USER_ID} /npm-global \
+  && chown -R ${CONTAINER_USER_ID}:${CONTAINER_USER_ID} /app && chmod -R 770 /app
+  
+USER ${CONTAINER_USER_ID}
+WORKDIR /app
+COPY . /app
 
 RUN NPM_CONFIG_PREFIX=/npm-global \
     PATH=$NPM_CONFIG_PREFIX/bin:$NPM_CONFIG_PREFIX/lib/node_modules/@angular/cli/bin:$PATH \
@@ -11,4 +21,4 @@ RUN NPM_CONFIG_PREFIX=/npm-global \
   && npm install --no-cache \
   && ng build --prod
   
-CMD ["cp", "-r", "/opt/dist/*", "/dist"]  
+CMD ["cp", "-r", "/app/dist/*", "/dist"]
