@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "argg-ui": {
+    "kq-ui": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/argg-ui",
+            "outputPath": "dist/kq-ui",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -96,24 +96,24 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "argg-ui:build"
+            "browserTarget": "kq-ui:build"
           },
           "configurations": {
             "dlv": {
-              "browserTarget": "argg-ui:build:production"
+              "browserTarget": "kq-ui:build:production"
             },
             "test": {
-              "browserTarget": "argg-ui:build:production"
+              "browserTarget": "kq-ui:build:production"
             },
             "production": {
-              "browserTarget": "argg-ui:build:production"
+              "browserTarget": "kq-ui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "argg-ui:build"
+            "browserTarget": "kq-ui:build"
           }
         },
         "test": {
@@ -147,7 +147,7 @@
         }
       }
     },
-    "argg-ui-e2e": {
+    "kq-ui-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "architect": {
@@ -155,7 +155,7 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "argg-ui:serve"
+            "devServerTarget": "kq-ui:serve"
           }
         },
         "lint": {
@@ -170,5 +170,5 @@
       }
     }
   },
-  "defaultProject": "argg-ui"
+  "defaultProject": "kq-ui"
 }
