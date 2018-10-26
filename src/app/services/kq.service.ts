@@ -13,7 +13,7 @@ export class KqService {
   }
 
   /*
-  data: a json object as specified in the OpenAPI spec for ARGG
+  data: a json object as specified in the OpenAPI spec for KQ
   */
   requestKey(data: any): Observable<any> {
     var url = `${environment.kq_api_base_url}/request_key`;
