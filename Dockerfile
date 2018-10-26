@@ -19,6 +19,7 @@ RUN NPM_CONFIG_PREFIX=/npm-global \
   && echo "prefix=/npm-global" > ~/.npmrc \    
   && npm i --no-cache npm@latest -g && npm i --no-cache -g @angular/cli \
   && npm install --no-cache \
-  && ng build --prod
+  && ng build --prod \
+  && chmod -R o+r /app/dist/*
   
 CMD ["cp", "-r", "/app/dist/*", "/dist"]
