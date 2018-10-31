@@ -122,6 +122,7 @@ export class RequestKeyomponent implements OnInit {
         tap(val => this.autocompleteFromMetadataRecord = false),
         tap(val => this.metadataRecordErr = null),
         map(val => this.getMetadataRecordJsonUrl(val)),
+        tap(val => console.log("metadataRecordJsonUrl:"+val)),
         debounceTime(300),                
         tap(val => this.setMetadataSearchResponse(null)), 
         filter(val => val),
