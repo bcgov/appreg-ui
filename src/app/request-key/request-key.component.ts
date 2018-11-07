@@ -594,15 +594,20 @@ export class RequestKeyomponent implements OnInit {
       "title": this.form1.get("api").value.title
     }
 
+    var group = null;
+    if (this.form1.get('appGroup').value) {
+      group = {
+      "id": this.form1.get('appGroup').value.id,
+      "title": this.form1.get('appGroup').value.title
+      };
+    }
+
     var app = {
       "title": this.form1.get('appTitle').value,
       "url": this.form1.get("appUrl").value,
       "metadata_url": this.form1.get("metadataRecordUrl").value,
       "description": this.form1.get('appDescription').value,
-      "group": {
-        "id": this.form1.get('appGroup').value.id,
-        "title": this.form1.get('appGroup').value.title
-      },
+      "group": group,
       "status": "completed", //default value
       "owner": {
         "org_id": this.form1.get("ownerOrg").value.id,
