@@ -78,7 +78,7 @@ export class BcdcService {
     this.fetchGroups().subscribe(
       (resp) => {
         var groups = resp.result;
-        var filteredGroups = groups.filter(group => environment.group_blacklist.indexOf(group) == -1);
+        var filteredGroups = groups.filter(group => environment.group_blacklist.indexOf(group.name) == -1);
         this.allGroups.next(filteredGroups);
       },
       (err) => {
@@ -211,19 +211,7 @@ export class BcdcService {
   public fetchGroups(): Observable<any> {
     
     this.loadingGroups.next(true);
-    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/group_list`;
-
-    var options = {
-      "headers": new HttpHeaders().set('accept', "application/json")
-    }
-    
-    return this.http.get(url, options);
-  }
-
-  public packageSearch():  Observable<any> {
-    
-    this.loadingGroups.next(true);
-    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/group_list`;
+    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/group_list?all_fields=true`;
 
     var options = {
       "headers": new HttpHeaders().set('accept', "application/json")

@@ -16,17 +16,16 @@
 
             <div class="form-group">
               <label class="required">What type of API key does your application require</label>&nbsp;&nbsp;
-
-              <div class="radio-inline">
-                <label>
-                  <input type="radio" name="apiKeyType" id="key-type-developer" value="developer-key" formControlName="apiKeyType">
-                  Developer Key
-                </label>
-              </div>
               <div class="radio-inline">
                 <label>
                   <input type="radio" name="apiKeyType" id="key-type-prod" value="production-key" formControlName="apiKeyType">
                   Production Key
+                </label>
+              </div>
+              <div class="radio-inline">
+                <label>
+                  <input type="radio" name="apiKeyType" id="key-type-developer" value="developer-key" formControlName="apiKeyType">
+                  Developer Key
                 </label>
               </div>
             </div>
@@ -36,6 +35,8 @@
 
           </div>
         </div>
+
+        
 
         <!-- choose an API -->
         <div class="panel panel-default" *ngIf="form1.get('apiKeyType').value == 'production-key'">
@@ -54,8 +55,16 @@
               </div>
             </div>
 
-            <div class="alert well" *ngIf="form1.get('api').value && TODO_requires_key">
+            <div class="form-group" *ngIf="form1.get('api').value && form1.get('api').value.notes">
+              <p>{{form1.get('api').value.notes}}</p>
+            </div>
+
+            <div class="alert well" *ngIf="form1.get('api').value && apiKeyRequirement != API_KEY_MANDATORY && apiKeyRequirement != API_KEY_OPTIONAL">
               <span class="glyphicon glyphicon-search" aria-hidden="true"></span> This API is publically accessible and does not require an API key.
+            </div> 
+
+            <div class="alert alert-info" *ngIf="form1.get('api').value && apiKeyRequirement == API_KEY_OPTIONAL">
+              <span class="glyphicon glyphicon-search" aria-hidden="true"></span> A key is optional for this API.  It is possible to use the API without a key, although there may be restrictions.
             </div> 
 
             <div class="alert alert-danger" *ngIf="bcdcService.loadingApisError">
@@ -65,279 +74,283 @@
           </div>
         </div>
 
-        <!-- General info about the application that will use the API -->
+        <div *ngIf="form1.get('apiKeyType').value == 'production-key' && form1.get('api').value && apiKeyRequirement">
 
-        <div class="panel panel-default" *ngIf="form1.get('api').value">
-          <div class="panel-heading">About your application</div>
-          <div class="panel-body">
+          <!-- General info about the application that will use the API -->
 
-            <div class="form-group">
-              <label class="required">Does your application have an existing metadata record in the BC Data Catalog?</label>&nbsp;&nbsp;
+          <div class="panel panel-default">
+            <div class="panel-heading">About your application</div>
+            <div class="panel-body">
 
-              <div class="radio-inline">
-                <label>
-                  <input type="radio" name="hasMetadataRecord" id="has-metadata-record-yes" value="yes" formControlName="hasMetadataRecord">
-                  Yes
-                </label>
-              </div>
-              <div class="radio-inline">
-                <label>
-                  <input type="radio" name="hasMetadataRecord" id="has-metadata-record-no" value="no" formControlName="hasMetadataRecord">
-                  No
-                </label>
-              </div>
-            </div>
-
-            <!-- hasMetadataRecord == 'no' -->
-            <div *ngIf="form1.get('hasMetadataRecord').value == 'no'">
-              <div class="alert alert-info" role="alert">
-                <span class="glyphicon glyphicon-search" aria-hidden="true"></span> A new metadata record will be created for you based on the information you provide in this form.
-              </div>
-            </div>
-
-            <!-- hasMetadataRecord == 'yes' -->
-            <div *ngIf="form1.get('hasMetadataRecord').value == 'yes'">
               <div class="form-group">
-                <label class="required" for="inputTitle">Metadata Record URL</label>
-                <div class="input-group" >
-                  <input type="text" class="form-control" id="metadata-record-url" placeholder="URL" formControlName="metadataRecordUrl">
-                  <div class="input-group-addon simple-addon">
-                    <div class="loader" *ngIf="loadingMetadataRecord"></div>
+                <label class="required">Does your application have an existing metadata record in the BC Data Catalog?</label>&nbsp;&nbsp;
+
+                <div class="radio-inline">
+                  <label>
+                    <input type="radio" name="hasMetadataRecord" id="has-metadata-record-yes" value="yes" formControlName="hasMetadataRecord">
+                    Yes
+                  </label>
+                </div>
+                <div class="radio-inline">
+                  <label>
+                    <input type="radio" name="hasMetadataRecord" id="has-metadata-record-no" value="no" formControlName="hasMetadataRecord">
+                    No
+                  </label>
+                </div>
+              </div>
+
+              <!-- hasMetadataRecord == 'no' -->
+              <div *ngIf="form1.get('hasMetadataRecord').value == 'no'">
+                <div class="alert alert-info" role="alert">
+                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span> A new metadata record will be created for you based on the information you provide in this form.
+                </div>
+              </div>
+
+              <!-- hasMetadataRecord == 'yes' -->
+              <div *ngIf="form1.get('hasMetadataRecord').value == 'yes'">
+                <div class="form-group">
+                  <label class="required" for="inputTitle">Metadata Record URL</label>
+                  <div class="input-group" >
+                    <input type="text" class="form-control" id="metadata-record-url" placeholder="URL" formControlName="metadataRecordUrl">
+                    <div class="input-group-addon simple-addon">
+                      <div class="loader" *ngIf="loadingMetadataRecord"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="form1.get('metadataRecordUrl').valid && autocompleteFromMetadataRecord && !metadataRecordErr && !loadingMetadataRecord">
+                  <div class="alert alert-info" role="alert">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Some of the form fields below have been populated based on information in the metadata record.
+                  </div>
+                </div>
+
+                <div *ngIf="form1.get('metadataRecordUrl').value && !form1.get('metadataRecordUrl').valid && metadataRecordErr && !loadingMetadataRecord">
+                  <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Invalid URL
+                  </div>
+                </div>
+
+                <div *ngIf="form1.get('metadataRecordUrl').value && form1.get('metadataRecordUrl').valid && metadataRecordErr && !loadingMetadataRecord">
+                  <div class="alert alert-info" role="alert">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>{{metadataRecordErr}}
                   </div>
                 </div>
               </div>
 
-              <div *ngIf="form1.get('metadataRecordUrl').valid && autocompleteFromMetadataRecord && !metadataRecordErr && !loadingMetadataRecord">
-                <div class="alert alert-info" role="alert">
-                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Some of the form fields below have been populated based on information in the metadata record.
+              <div>
+
+                <div class="form-group">
+                  <label class="required" title="A descriptive title for your application">Title</label>
+                  <input type="text" class="form-control" id="title" placeholder="Title" formControlName="appTitle">
+                </div>          
+
+                <div class="form-group">
+                  <label class="required" title="A description of your application to be included in a metadata record">Description</label>
+                  <textarea class="form-control" id="description" placeholder="Description" formControlName="appDescription" rows="5"></textarea>
                 </div>
+
+                <div class="form-group">
+                  <label class="required" title="The type of application described above. Examples include ArcGIS Online (agol) and the Simple Map Kit (smk).">Application Type</label>
+                  <div class="input-group">
+                    <select class="form-control" formControlName="appGroup">
+                      <option *ngFor="let group of groups" [ngValue]="group">{{group.title}}</option>
+                    </select>
+                    <div class="input-group-addon simple-addon">
+                      <div class="loader" *ngIf="bcdcService.loadingGroups.value"></div>
+                    </div>
+                  </div>
+                </div> 
+
+                <div class="form-group">
+                  <label class="required" title="The URL for the application described above">Application URL</label>
+                  <input type="text" class="form-control" id="app-url" placeholder="URL" formControlName="appUrl">
+                </div>  
+
+                <div class="alert alert-danger" role="alert" *ngIf="form1.get('appUrl').errors && form1.get('appUrl').errors.pattern">
+                  Invalid URL
+                </div>              
+
               </div>
 
-              <div *ngIf="form1.get('metadataRecordUrl').value && !form1.get('metadataRecordUrl').valid && metadataRecordErr && !loadingMetadataRecord">
-                <div class="alert alert-danger" role="alert">
-                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Invalid URL
+              <!-- Access -->
+              <div>
+                <div class="form-group">
+                  <label class="required" title="The audience that can access the application">Who can access this application?</label>
+                  <select class="form-control" formControlName="viewAudience">
+                    <option *ngFor="let viewAudience of viewAudiences" value="{{viewAudience.display_name}}">{{viewAudience.display_name}}</option>
+                  </select>
                 </div>
-              </div>
 
-              <div *ngIf="form1.get('metadataRecordUrl').value && form1.get('metadataRecordUrl').valid && metadataRecordErr && !loadingMetadataRecord">
-                <div class="alert alert-info" role="alert">
-                  <span class="glyphicon glyphicon-search" aria-hidden="true"></span>{{metadataRecordErr}}
-                </div>
+                <div class="form-group">
+                  <label class="required" title="Security class of the application">What is the application's security classification</label>
+                  <select class="form-control" formControlName="securityClass">
+                    <option *ngFor="let securityClassification of securityClassifications" value="{{securityClassification.display_name}}">{{securityClassification.display_name}}</option>
+                  </select>
+                </div>            
+
+                <!--div class="form-group">
+                  <label class="required" for="inputTitle">What is the application's license</label>
+                  <select class="form-control" formControlName="license">
+                    <option *ngFor="let license of licenses" [ngValue]="license">{{license.title}}</option>
+                  </select>
+                </div-->              
+
               </div>
             </div>
+          </div>
 
-            <div>
+          <!-- Application owner -->
+          <div class="panel panel-default">
+            <div class="panel-heading">Application owner</div>
+            <div class="panel-body">
 
-              <div class="form-group">
-                <label class="required" for="inputTitle">Title</label>
-                <input type="text" class="form-control" id="title" placeholder="Title" formControlName="appTitle">
-              </div>          
-
-              <div class="form-group">
-                <label class="required" for="inputTitle">Description</label>
-                <textarea class="form-control" id="description" placeholder="Description" formControlName="appDescription" rows="5"></textarea>
-              </div>
+              <p></p>
 
               <div class="form-group">
-                <label class="required" for="inputTitle">Application Type</label>
+                <label class="required" title="Who owns the application that will use the API key?">Organization</label>
                 <div class="input-group">
-                  <select class="form-control" formControlName="appType">
-                    <option *ngFor="let group of groups" [ngValue]="group">{{group}}</option>
+                  <select class="form-control" formControlName="ownerOrg">
+                    <option *ngFor="let org of topLevelOrganizations" [ngValue]="org">{{org.title}}</option>
                   </select>
                   <div class="input-group-addon simple-addon">
-                    <div class="loader" *ngIf="bcdcService.loadingGroups.value"></div>
+                    <div class="loader" *ngIf="bcdcService.loadingOrganizations.value"></div>
                   </div>
                 </div>
-              </div> 
+              </div>
 
-              <div class="form-group">
-                <label class="required" for="inputTitle">Application URL</label>
-                <input type="text" class="form-control" id="app-url" placeholder="URL" formControlName="appUrl">
-              </div>  
-
-              <div class="alert alert-danger" role="alert" *ngIf="form1.get('appUrl').errors && form1.get('appUrl').errors.pattern">
-                Invalid URL
+              <div class="form-group" *ngIf="form1.get('ownerOrg').value && ownerSubOrganizations.length > 0">
+                <label class="required" title="Who owns the application that will use the API key?">Sub-organization</label>
+                <select class="form-control" formControlName="ownerSubOrg">
+                  <option *ngFor="let org of ownerSubOrganizations" [ngValue]="org">{{org.title}}</option>
+                </select>
               </div>              
 
             </div>
+            <div class="panel-heading">Principal contact person for API owner</div>
+            <div class="panel-body">
 
-            <!-- Access -->
-            <div>
               <div class="form-group">
-                <label class="required" for="inputTitle">Who can access this application?</label>
-                <select class="form-control" formControlName="viewAudience">
-                  <option *ngFor="let viewAudience of viewAudiences" value="{{viewAudience.display_name}}">{{viewAudience.display_name}}</option>
-                </select>
+                <label class="required" title="The first name and last name of the point of contact for the application">Name</label>
+                <input type="text" class="form-control" id="principal-contact-name" placeholder="Name" formControlName="principalContactName">
               </div>
 
               <div class="form-group">
-                <label class="required" for="inputTitle">What is the application's security classification</label>
-                <select class="form-control" formControlName="securityClass">
-                  <option *ngFor="let securityClassification of securityClassifications" value="{{securityClassification.display_name}}">{{securityClassification.display_name}}</option>
-                </select>
+                <label class="required" title="Provide a valid B.C. Government or business email address. This will be used to verify your submission">Email Address</label>
+                <input type="text" class="form-control" id="principal-contact-email" placeholder="Email Address" formControlName="principalContactEmail">
+              </div>
+
+              <div class="form-group">
+                <label class="required" title="Provide a valid phone number for the point of contact">Phone Number</label>
+                <input type="text" class="form-control" id="principal-contact-phone" placeholder="Phone Number" formControlName="principalContactPhone">
               </div>            
 
               <div class="form-group">
-                <label class="required" for="inputTitle">What is the application's license</label>
-                <select class="form-control" formControlName="license">
-                  <option *ngFor="let license of licenses" [ngValue]="license">{{license.title}}</option>
-                </select>
-              </div>              
+                <label class="required">Are you the person listed above?</label>&nbsp;&nbsp;
+
+                <div class="radio-inline">
+                  <label>
+                    <input type="radio" name="isPrincipalContact" id="is-principal-contact-yes" value="yes" formControlName="isPrincipalContact">
+                    Yes
+                  </label>
+                </div>
+                <div class="radio-inline">
+                  <label>
+                    <input type="radio" name="isPrincipalContact" id="is-principal-contact-no" value="no" formControlName="isPrincipalContact">
+                    No
+                  </label>
+                </div>
+              </div>   
 
             </div>
-          </div>
-        </div>
+            <div class="panel-heading" *ngIf="form1.get('isPrincipalContact').value == 'no'">Your contact information</div>
+            <div class="panel-body" *ngIf="form1.get('isPrincipalContact').value == 'no'">
+              
+              <div class="form-group">
+                <label class="required">Name</label>
+                <input type="text" class="form-control" id="submitter-contact-name" placeholder="Name" formControlName="submitterContactName">
+              </div>
 
-        <!-- Application owner -->
-        <div class="panel panel-default" *ngIf="form1.get('api').value">
-          <div class="panel-heading">Application owner</div>
-          <div class="panel-body">
+              <div class="form-group">
+                <label class="required">Email Address</label>
+                <input type="text" class="form-control" id="submitter-contact-email" placeholder="Email Address" formControlName="submitterContactEmail">
+              </div>
 
-            <p>Who owns the application that will use the API key?</p>
+              <div class="form-group">
+                <label class="required">Phone Number</label>
+                <input type="text" class="form-control" id="submitter-contact-phone" placeholder="Phone Number" formControlName="submitterContactPhone">
+              </div>
 
-            <div class="form-group">
-              <label class="required" for="inputTitle">Organization</label>
-              <div class="input-group">
-                <select class="form-control" formControlName="ownerOrg">
-                  <option *ngFor="let org of topLevelOrganizations" [ngValue]="org">{{org.title}}</option>
+              <div class="form-group">
+                <label class="required">Role</label>
+                <select class="form-control" formControlName="submitterRole">
+                  <option *ngFor="let role of contactRoles" value="role.name">{{role.display_name}}</option>
                 </select>
-                <div class="input-group-addon simple-addon">
-                  <div class="loader" *ngIf="bcdcService.loadingOrganizations.value"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="required">Organization</label>
+                <div class="input-group">
+                  <select class="form-control" formControlName="submitterOrg">
+                    <option *ngFor="let org of topLevelOrganizations" [ngValue]="org">{{org.title}}</option>
+                  </select>
+                  <div class="input-group-addon simple-addon">
+                    <div class="loader" *ngIf="bcdcService.loadingOrganizations.value"></div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="form-group" *ngIf="form1.get('ownerOrg').value && ownerSubOrganizations.length > 0">
-              <label class="required" for="inputTitle">Sub-organization</label>
-              <select class="form-control" formControlName="ownerSubOrg">
-                <option *ngFor="let org of ownerSubOrganizations" [ngValue]="org">{{org.title}}</option>
-              </select>
-            </div>              
-
-          </div>
-          <div class="panel-heading">Principal contact person for API owner</div>
-          <div class="panel-body">
-
-            <div class="form-group">
-              <label class="required" for="inputTitle">Name</label>
-              <input type="text" class="form-control" id="principal-contact-name" placeholder="Name" formControlName="principalContactName">
-            </div>
-
-            <div class="form-group">
-              <label class="required" for="inputTitle">Email Address</label>
-              <input type="text" class="form-control" id="principal-contact-email" placeholder="Email Address" formControlName="principalContactEmail">
-            </div>
-
-            <div class="form-group">
-              <label class="required" for="inputTitle">Phone Number</label>
-              <input type="text" class="form-control" id="principal-contact-phone" placeholder="Phone Number" formControlName="principalContactPhone">
-            </div>            
-
-            <div class="form-group">
-              <label class="required">Are you the person listed above?</label>&nbsp;&nbsp;
-
-              <div class="radio-inline">
-                <label>
-                  <input type="radio" name="isPrincipalContact" id="is-principal-contact-yes" value="yes" formControlName="isPrincipalContact">
-                  Yes
-                </label>
-              </div>
-              <div class="radio-inline">
-                <label>
-                  <input type="radio" name="isPrincipalContact" id="is-principal-contact-no" value="no" formControlName="isPrincipalContact">
-                  No
-                </label>
-              </div>
-            </div>   
-
-          </div>
-          <div class="panel-heading" *ngIf="form1.get('isPrincipalContact').value == 'no'">Your contact information</div>
-          <div class="panel-body" *ngIf="form1.get('isPrincipalContact').value == 'no'">
-            
-            <div class="form-group">
-              <label class="required" for="inputTitle">Name</label>
-              <input type="text" class="form-control" id="submitter-contact-name" placeholder="Name" formControlName="submitterContactName">
-            </div>
-
-            <div class="form-group">
-              <label class="required" for="inputTitle">Email Address</label>
-              <input type="text" class="form-control" id="submitter-contact-email" placeholder="Email Address" formControlName="submitterContactEmail">
-            </div>
-
-            <div class="form-group">
-              <label class="required" for="inputTitle">Phone Number</label>
-              <input type="text" class="form-control" id="submitter-contact-phone" placeholder="Phone Number" formControlName="submitterContactPhone">
-            </div>
-
-            <div class="form-group">
-              <label class="required" for="inputTitle">Role</label>
-              <select class="form-control" formControlName="submitterRole">
-                <option *ngFor="let role of contactRoles" value="role.name">{{role.display_name}}</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="required" for="inputTitle">Organization</label>
-              <div class="input-group">
-                <select class="form-control" formControlName="submitterOrg">
-                  <option *ngFor="let org of topLevelOrganizations" [ngValue]="org">{{org.title}}</option>
+              <div class="form-group" *ngIf="form1.get('submitterOrg').value && submitterSubOrganizations.length > 0">
+                <label class="required">Sub-organization</label>
+                <select class="form-control" formControlName="submitterSubOrg">
+                  <option *ngFor="let org of submitterSubOrganizations" [ngValue]="org">{{org.title}}</option>
                 </select>
-                <div class="input-group-addon simple-addon">
-                  <div class="loader" *ngIf="bcdcService.loadingOrganizations.value"></div>
-                </div>
-              </div>
+              </div>               
+
             </div>
 
-            <div class="form-group" *ngIf="form1.get('submitterOrg').value && submitterSubOrganizations.length > 0">
-              <label class="required" for="inputTitle">Sub-organization</label>
-              <select class="form-control" formControlName="submitterSubOrg">
-                <option *ngFor="let org of submitterSubOrganizations" [ngValue]="org">{{org.title}}</option>
-              </select>
-            </div>               
+          </div>
+
+          <!-- challenge -->
+
+          <div *ngIf="!form1.get('challengeSecret').disabled">
+            Demonstrate that you are a human by typing out the text shown in this image.
+            <span *ngIf="captchaImageLoading" style="max-width:50px">
+              <div class="loader pull-right"></div>
+            </span>
+            <div class="form-inline">
+              <img *ngIf="captchaUrl" [src]="captchaUrl" (load)="captchaImageLoading = false;" class="captcha"/>            
+              <button class="btn" style="margin-left:20px" (click)="newCaptcha()" *ngIf="!captchaImageLoading && !submitSuccess">Get a new image</button>            
+            </div>
+            <div class="form-inline" *ngIf="captchaUrl && !captchaImageLoading">
+              <input type="text" class="form-control" id="challenge-secret" placeholder="" formControlName="challengeSecret"style="max-width:160px"/>                     
+            </div>
+          </div>
+
+          <br/>
+
+          <div>
+
+            <div class="alert alert-info" *ngIf="form1.valid && form1.valid && !submitSuccess">Clicking "submit" below will record the API key request and will trigger an email to be sent to your email address.  The email will summarize details of the request and will provide a link to signal that you have verified those details.  Only after the verification link in the email is clicked will the API key request be sent to the API owner for review and approval.</div>
+
+            <div class="alert alert-success" *ngIf="form1.valid && form1.valid && submitSuccess">The API key request has been recorded.  An email will be sent to you to verify the details of the request.  (The email will contain a link to indicate that you have verified the request.)  Once you have verified the request, it will be sent to the API owner for review and approval.</div>
+
+            <div class="alert alert-danger" *ngIf="submitError && !submitLoading">
+              <strong>An error occurred.</strong> {{submitError}}
+            </div>     
+
+            <button class="btn btn-default pull-right" (click)="submit()" [disabled]="(submitLoading || !form1.valid)" *ngIf="!submitSuccess && !submitLoading">Submit</button>
+
+            <div class="well" *ngIf="submitLoading">
+              Processing. Just a moment... <div class="loader pull-right" *ngIf="submitLoading"></div>
+            </div>
+
+            <div class="divider"></div>
 
           </div>
 
         </div>
-
-        <!-- challenge -->
-
-        <div *ngIf="!form1.get('challengeSecret').disabled">
-          Demonstrate that you are a human by typing out the text shown in this image.
-          <span *ngIf="captchaImageLoading" style="max-width:50px">
-            <div class="loader pull-right"></div>
-          </span>
-          <div class="form-inline">
-            <img *ngIf="captchaUrl" [src]="captchaUrl" (load)="captchaImageLoading = false;" class="captcha"/>            
-            <button class="btn" style="margin-left:20px" (click)="newCaptcha()" *ngIf="!captchaImageLoading">Get a new image</button>            
-          </div>
-          <div class="form-inline" *ngIf="captchaUrl && !captchaImageLoading">
-            <input type="text" class="form-control" id="challenge-secret" placeholder="" formControlName="challengeSecret"style="max-width:160px"/>                     
-          </div>
-        </div>
-
-        <br/>
 
       </form>
-
-      <div *ngIf="form1.get('api').value">
-
-        <div class="alert alert-info" *ngIf="form1.valid && form1.valid && !submitSuccess">Clicking "submit" below will record the API key request and will trigger an email to be sent to your email address.  The email will summarize details of the request and will provide a link to signal that you have verified those details.  Only after the verification link in the email is clicked will the API key request be sent to the API owner for review and approval.</div>
-
-        <div class="alert alert-success" *ngIf="form1.valid && form1.valid && submitSuccess">The API key request has been recorded.  An email will be sent to you to verify the details of the request.  (The email will contain a link to indicate that you have verified the request.)  Once you have verified the request, it will be sent to the API owner for review and approval.</div>
-
-        <div class="alert alert-danger" *ngIf="submitError && !submitLoading">
-          <strong>An error occurred.</strong> {{submitError}}
-        </div>     
-
-        <button class="btn btn-default pull-right" (click)="submit()" [disabled]="(submitLoading || !form1.valid)" *ngIf="!submitSuccess && !submitLoading">Submit</button>
-
-        <div class="well" *ngIf="submitLoading">
-          Processing. Just a moment... <div class="loader pull-right" *ngIf="submitLoading"></div>
-        </div>
-
-        <div class="divider"></div>
-
-      </div>
 
       <div class="stretch" *ngIf="!form1.get('api').value"></div>
 
