@@ -14,13 +14,16 @@ import { of, from, combineLatest } from 'rxjs';
 })
 export class RequestKeyomponent implements OnInit {
 
-  DEFAULT_ERROR_MSG: String = "Unable to register the API.";
+  DEFAULT_ERROR_MSG: string = "Unable to register the API.";
+  API_KEY_MANDATORY: string = "key-mandatory";
+  API_KEY_OPTIONAL: string = "key-optional";
 
   form1: FormGroup;
   loadingMetadataRecord: boolean;
   allApis: any[];
   metadataRecord: any;
   metadataRecordErr: string;
+  apiKeyRequirement: string;
   autocompleteFromMetadataRecord: boolean;
   submitSuccess: boolean;
   submitLoading: boolean;
@@ -55,12 +58,12 @@ export class RequestKeyomponent implements OnInit {
       //Application
       appTitle: [null, Validators.required],
       appDescription: [null, Validators.required],
-      appType: [null, Validators.required],
+      appGroup: [null, Validators.required],
       appUrl: [null, Validators.compose([Validators.required, Validators.pattern(urlService.validUrlPattern)])],
       //Access
       viewAudience: [null, Validators.required],
       securityClass: [null, Validators.required],
-      license: [null, Validators.required],
+        //license: [null, Validators.required],
       //owner
       ownerOrg: [null, Validators.required],
       ownerSubOrg: [null, Validators.required],
@@ -89,7 +92,7 @@ export class RequestKeyomponent implements OnInit {
 
     bcdcService.licenses.subscribe(
       (licenses) => this.licenses = licenses
-      )
+      );
 
     bcdcService.topLevelOrganizations
     .subscribe(
@@ -141,6 +144,12 @@ export class RequestKeyomponent implements OnInit {
         }
         ) 
 
+    //changes in selected API
+    this.form1.get("api").valueChanges
+      .subscribe((api) => {
+        this.apiKeyRequirement = this.getApiKeyRequirement(api);
+      });
+
     //step complete?  enable next step
     //-------------------------------------------------------------------
     this.form1.get("apiKeyType").valueChanges
@@ -175,6 +184,26 @@ export class RequestKeyomponent implements OnInit {
 
   ngOnInit() {
     this.togglePrimaryFormFieldsEnabled(false);
+  }
+
+  /*
+  Identifies the API key requirements for this API.  Returns one of:
+  [API_KEY_MANDATORY, API_KEY_OPTIONAL, None]
+  */
+  getApiKeyRequirement(api) : string{
+    if (!api || !api.hasOwnProperty("tags")) {
+      return null;
+    }
+    
+    var isRequired = api.tags.filter((tag) => tag.name == this.API_KEY_MANDATORY).length;
+    if (isRequired)
+      return this.API_KEY_MANDATORY;
+    
+    var isOptional = api.tags.filter((tag) => tag.name == this.API_KEY_OPTIONAL).length;
+    if (isOptional)
+      return this.API_KEY_OPTIONAL;
+
+    return null;
   }
 
   /*
@@ -329,12 +358,12 @@ export class RequestKeyomponent implements OnInit {
       //about this application
       this.form1.get("appTitle"), 
       this.form1.get("appDescription"), 
-      this.form1.get("appType"),
+      this.form1.get("appGroup"),
       this.form1.get("appUrl"),
       //access
       this.form1.get("viewAudience"),
       this.form1.get("securityClass"),
-      this.form1.get("license"),
+      //this.form1.get("license"),
       //owner
       this.form1.get("ownerOrg"),
       this.form1.get("ownerSubOrg"),
@@ -433,6 +462,7 @@ export class RequestKeyomponent implements OnInit {
     }   
 
     //license
+    /*
     if (metadataRecord.hasOwnProperty("license_url")) {
       var licenseUrl = metadataRecord.license_url;
       if (!this.form1.get("license").touched) {
@@ -445,7 +475,8 @@ export class RequestKeyomponent implements OnInit {
             }
         })   
       }
-    }  
+    } 
+    */ 
 
     //owner
     //------------
@@ -568,7 +599,10 @@ export class RequestKeyomponent implements OnInit {
       "url": this.form1.get("appUrl").value,
       "metadata_url": this.form1.get("metadataRecordUrl").value,
       "description": this.form1.get('appDescription').value,
-      "type": this.form1.get('appType').value,
+      "group": {
+        "id": this.form1.get('appGroup').value.id,
+        "title": this.form1.get('appGroup').value.title
+      },
       "status": "completed", //default value
       "owner": {
         "org_id": this.form1.get("ownerOrg").value.id,
@@ -581,11 +615,12 @@ export class RequestKeyomponent implements OnInit {
         "metadata_visibility": "Public", //default value
         "security_class": this.form1.get("securityClass").value 
       },
+      /*
       "license": {
-        "license_title": this.form1.get("license").value.title,
-        "license_url": this.form1.get("license").value.url,
-        "license_id": this.form1.get("license").value.id
-      }
+        "license_title": this.defaultLicense.title,
+        "license_url": this.defaultLicense.value.url,
+        "license_id": this.defaultLicense.value.id
+      }*/
     };
 
     var challengeResponse = {
