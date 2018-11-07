@@ -25,10 +25,6 @@ export class UrlService {
 
   fetch(url): Observable<any> {    
 
-    if (!this.isValidUrl(url)) {
-      return throwError("Invalid URL");
-    }
-
     var options = {
       "headers": new HttpHeaders().set('accept', "application/json")
     }
