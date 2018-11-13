@@ -333,7 +333,7 @@
 
             <div class="alert alert-info" *ngIf="form1.valid && form1.valid && !submitSuccess">Clicking "submit" below will record the API key request and will trigger an email to be sent to your email address.  The email will summarize details of the request and will provide a link to signal that you have verified those details.  Only after the verification link in the email is clicked will the API key request be sent to the API owner for review and approval.</div>
 
-            <div class="alert alert-success" *ngIf="form1.valid && form1.valid && submitSuccess">The API key request has been recorded.  An email will be sent to you to verify the details of the request.  (The email will contain a link to indicate that you have verified the request.)  Once you have verified the request, it will be sent to the API owner for review and approval.</div>
+            <div class="alert alert-success" *ngIf="form1.valid && form1.valid && submitSuccess">The API key request has been recorded. An email will be sent to you to verify the details of the request. The email will contain a link to indicate that you have verified the request. Once you have verified the request, it will be sent to the API owner for review and approval.</div>
 
             <div class="alert alert-danger" *ngIf="submitError && !submitLoading">
               <strong>An error occurred.</strong> {{submitError}}
