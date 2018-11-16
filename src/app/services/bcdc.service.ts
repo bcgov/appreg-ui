@@ -132,8 +132,8 @@ export class BcdcService {
   public fetchApis(): Observable<any> {
     this.loadingApis.next(true);
    
-    //var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/package_search?fq=tags:API`;
-    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/package_search?fq=type:WebService&rows=1000&sort=title+desc`;
+    var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/package_search?fq=groups:bc-government-api-registry&rows=1000&sort=title+desc`;
+    //var url = `${environment.bcdc_base_url}${environment.bcdc_api_path}/package_search?fq=type:WebService&rows=1000&sort=title+desc`;
 
     var options = {
       "headers": new HttpHeaders().set('accept', "application/json")
