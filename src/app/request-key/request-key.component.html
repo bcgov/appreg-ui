@@ -1,6 +1,8 @@
-<p>The B.C. Government and the broader public sector provide many RESTful web services (also known as Application Programming Interfaces, or APIs). Some of these APIs are not publically accessible.  Those which are not publically accessible require a "key" to be passed with each API request.  A key may be granted to a specific <i>application</i> (such as a web app), allowing it to access a specific API.</p>
+<p>Several application programming interfaces (APIs) are only accessible with an API Key. API Keys are granted to specific applications.</p>
 
-<p>This form allows a person representing a specific application to request a key for that application to use a specific BC public sector API.</p>
+<p>There are two types of API keys: Production Keys and Developer Keys. Production Keys are to be used by applications running in a production environment and Developer Keys are to be used for non-production purposes, including application development. It can take up to a week to process a Production Key request and receive the key, whereas a Developer Key can often be processed and received in a few minutes.</p>
+
+<p>To request an API Key please complete the following form:</p>
 
   <div class="row">
     <div class="col-md-8">
@@ -9,13 +11,10 @@
 
         <!-- choose an API -->
         <div class="panel panel-default">
-          <div class="panel-heading">API key type</div>
+          <div class="panel-heading">What type of API key are you requesting?</div>
           <div class="panel-body">
 
-            <p>There are two kinds of API keys: production keys and developer keys.  Production keys are to be used by applications that are running in a production environment, whereas developer keys are to be used for all other purposes.  Production keys typically allow higher throughput access to an API than developer keys do.  The process to obtain a production key is more involved.  It may take approximately a week for a production key request to be approved and the key to be granted, whereas developer keys can be obtained in a self-serve fashion within a few minutes.</p>
-
             <div class="form-group">
-              <label class="required">What type of API key does your application require</label>&nbsp;&nbsp;
               <div class="radio-inline">
                 <label>
                   <input type="radio" name="apiKeyType" id="key-type-prod" value="production-key" formControlName="apiKeyType">
@@ -83,7 +82,7 @@
             <div class="panel-body">
 
               <div class="form-group">
-                <label class="required">Does your application have an existing metadata record in the BC Data Catalog?</label>&nbsp;&nbsp;
+                <label class="required">Does your application have an existing metadata record in the BC Data Catalogue?</label>&nbsp;&nbsp;
 
                 <div class="radio-inline">
                   <label>
