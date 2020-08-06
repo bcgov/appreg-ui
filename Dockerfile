@@ -1,9 +1,38 @@
-FROM docker-registry.default.svc:5000/dbc-konga-tools/node-alpine-angular
+FROM alpine:3.7
 MAINTAINER leo.lou@gov.bc.ca
 
-COPY . ${BUILD_DIR}
+# prepare NodeJS build env
+ENV CADDY_VER=0.11.0 \
+    CONTAINER_USER_ID="1001" \
+    CONTAINER_GROUP_ID="1001"
 
-RUN npm install --no-cache \
-  && ng build --prod \
-  && chmod -R o+r ${BUILD_DIR}/dist/* \
-  && ls -lt ${BUILD_DIR}/dist/kq-ui/
+RUN apk update \
+  && apk add --no-cache --virtual .dev curl nodejs python make g++ git tar \
+  && git config --global url.https://github.com/.insteadOf git://github.com/ \
+  && adduser -D -u ${CONTAINER_USER_ID} -g ${CONTAINER_GROUP_ID} -h /app -s /bin/sh app \
+  && mkdir /npm-global && chown -R app:app /npm-global \
+  && chown -R app:app /app && chmod -R 770 /app \
+  && mkdir -p /var/www
+
+# installation
+USER app
+    
+WORKDIR /app
+COPY . /app
+
+RUN NPM_CONFIG_PREFIX=/npm-global \
+    PATH=$NPM_CONFIG_PREFIX/bin:$NPM_CONFIG_PREFIX/lib/node_modules/@angular/cli/bin:$PATH \
+  && echo "prefix=/npm-global" > ~/.npmrc \    
+  && npm i --no-cache npm@latest -g && npm i --no-cache -g @angular/cli \
+  && npm install --no-cache \
+  && ng build --prod
+# end of NodeJS build env
+
+# prepare hosting and build env cleanup
+USER root
+ADD Caddyfile /etc/Caddyfile
+RUN curl -L "https://github.com/mholt/caddy/releases/download/v0.11.0/caddy_v0.11.0_linux_amd64.tar.gz" \
+    | tar --no-same-owner -C /usr/bin/ -xz caddy \
+  && cp -a /app/dist/* /var/www/ \
+  && apk del .dev && rm -rf /app /npm-global
+
