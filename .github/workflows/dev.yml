@@ -30,6 +30,7 @@ jobs:
         username: $GITHUB_ACTOR
         password: ${{ secrets.GITHUB_TOKEN }}
         repository: bcgov-dss/kq-ui/kq-ui
+        dockerfile: Dockerfile.allinone
         tag_with_ref: true
         tag_with_sha: true
         add_git_labels: true
