@@ -11,7 +11,8 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: rymndhng/release-on-push-action@v0.15.0
+      - id: release
+        uses: rymndhng/release-on-push-action@v0.15.0
         with:
           bump_version_scheme: minor
 
@@ -35,3 +36,4 @@ jobs:
           dockerfile: Dockerfile.allinone
           push: true
           tags: kq-ui/kq-ui:${{ steps.release.outputs.tag_name }}
+          tag_with_sha: true
