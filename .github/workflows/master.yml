@@ -35,4 +35,3 @@ jobs:
           dockerfile: Dockerfile.allinone
           push: true
           tags: kq-ui/kq-ui:${{ steps.release.outputs.tag_name }}
-          tag_with_sha: true
