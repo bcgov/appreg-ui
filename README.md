@@ -9,4 +9,5 @@ docker build --build-arg configuration=[ENV_NAME] -t kq-ui .
 Example: 
   docker build --build-arg configuration=dlv -t kq-ui .
 
+
 docker run kq-ui
