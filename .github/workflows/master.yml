@@ -14,7 +14,7 @@ jobs:
       - id: release
         uses: rymndhng/release-on-push-action@v0.15.0
         with:
-          bump_version_scheme: minor
+          bump_version_scheme: norelease
 
       - name: Check Output Parameters
         run: |
@@ -36,4 +36,4 @@ jobs:
           dockerfile: Dockerfile.allinone
           push: true
           tags: ${{ steps.release.outputs.tag_name }}
-          tag_with_sha: true
+          tag_with_sha: false
